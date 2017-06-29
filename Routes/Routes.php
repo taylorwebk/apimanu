@@ -13,3 +13,8 @@ $app->post('/vehiculo', function (Request $req, Response $res)
   $result = VC::add($req->getParsedBody());
   return $res->withJson($result);
 });
+$app->get('/vehiculos', function (Request $req, Response $res)
+{
+  $result = VC::getAll();
+  return $res->withJson($result);
+});

@@ -39,6 +39,11 @@ class VehiculoController
       return R::error('No se reconocieron todos los campos');
     }
   }
+  public function getAll()
+  {
+    $res = Vehiculo::where('estado', '=', 0)->get();
+    return R::success($res);
+  }
   private static function validateData($data, $fields)
   {
     foreach ($fields as $value) {
