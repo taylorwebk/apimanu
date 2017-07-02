@@ -2,10 +2,8 @@
 namespace Controllers;
 use Models\Vehiculo as Vehiculo;
 use Models\Descuento as Descuento;
+use Models\Reserva as Reserva;
 use Models\R as R;
-/**
- *
- */
 class VehiculoController
 {
   public static function add($data)
@@ -30,19 +28,81 @@ class VehiculoController
         'cantidad' => $data['monto'],
         'tipo' => $data['tipo']
         ]);
-      $v->descuento;
       return R::success('Se adiciono correctamente el vehiculo');
-      // $v->descuento()->save($d);
-      // return $v;
     }
     else {
-      return R::error('No se reconocieron todos los campos');
+      return R::error('No se reconoce el/los campo(s): '.implode(', ', $fields));
     }
   }
-  public function getAll()
+  public static function getAll()
   {
     $res = Vehiculo::where('estado', '=', 0)->get();
     return R::success($res);
+  }
+  public static function approve($data)
+  {
+      if (self::validateData($data, ['id'])) {
+        $v = Vehiculo::find($data['id']);
+        if ($v) {
+          $v->estado = 1;
+          $v->save();
+          return R::success('Se aprobó el vehículo.');
+        } else {
+          return R::error('Vehiculo con id: '. $data['id']. ' no encontrado');
+        }
+      } else {
+        return R::error('No se reconoce el/los campo(s): '.implode(', ', ['id']));
+      }
+  }
+  public static function delete($data)
+  {
+      if (self::validateData($data, ['id'])) {
+        $v = Vehiculo::find($data['id']);
+        if ($v) {
+          $v->delete();
+          return R::success('Se eliminó el vehículo.');
+        } else {
+          return R::error('Vehiculo con id: '. $data['id']. ' no encontrado');
+        }
+      } else {
+        return R::error('No se reconoce el/los campo(s): '.implode(', ', ['id']));
+      }
+  }
+  public static function getApproved()
+  {
+    $res = Vehiculo::where('estado', '=', 1)->whereNotIn('id', Reserva::select('vehiculo_id')->get())->get();
+    return R::success($res);
+  }
+  public static function reserve($data)
+  {
+    $fields = ['id', 'comprador', 'vendedor'];
+    if (self::validateData($data, $fields)) {
+      $v = Vehiculo::where([
+        ['id', '=', $data['id']],
+        ['estado', '=', 1]
+        ])->whereNotIn('id', Reserva::select('vehiculo_id')->get())->first();
+      if ($v) {
+        // if (Vehiculo::has('reserva')) {
+        //   return R::error('El vehiculo ya fue reservado');
+        // }
+        Reserva::create([
+          'id' => null,
+          'vehiculo_id' => $v->id,
+          'comprador' => $data['comprador'],
+          'vendedor' => $data['vendedor']
+        ]);
+        return R::success('Reserva exitosa, ahora puede proceder con los apartados');
+      } else {
+        return R::error('Vehiculo con id: '.$data['id'].' no aprobado, no encontrado o ya reservado');
+      }
+    } else {
+      return R::error('No se reconoce el/los campo(s): '.implode(', ', $fields));
+    }
+  }
+  public function getReserves()
+  {
+    $vs = Vehiculo::with('reserva')->has('reserva')->get();
+    return R::success($vs);
   }
   private static function validateData($data, $fields)
   {

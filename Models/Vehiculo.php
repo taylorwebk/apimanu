@@ -13,6 +13,10 @@ class Vehiculo extends Model
   {
     return $this->hasOne('Models\Descuento');
   }
+  public function reserva()
+  {
+    return $this->hasOne('Models\Reserva');
+  }
   public static function add($mod, $ag, $ext, $int, $eq, $fen, $p, $e)
   {
     $v = new Vehiculo();
