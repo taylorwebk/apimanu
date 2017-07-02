@@ -18,3 +18,28 @@ $app->get('/vehiculos', function (Request $req, Response $res)
   $result = VC::getAll();
   return $res->withJson($result);
 });
+$app->post('/aprobar', function (Request $req, Response $res)
+{
+  $result = VC::approve($req->getParsedBody());
+  return $res->withJson($result);
+});
+$app->delete('/vehiculo', function (Request $req, Response $res)
+{
+  $result = VC::delete($req->getParsedBody());
+  return $res->withJson($result);
+});
+$app->get('/aprobados', function (Request $req, Response $res)
+{
+  $result = VC::getApproved();
+  return $res->withJson($result);
+});
+$app->post('/reservar', function (Request $req, Response $res)
+{
+  $result = VC::reserve($req->getParsedBody());
+  return $res->withJson($result);
+});
+$app->get('/reservas', function (Request $req, Response $res)
+{
+  $result = VC::getReserves();
+  return $res->withJson($result);
+});
