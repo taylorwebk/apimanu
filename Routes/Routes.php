@@ -43,3 +43,8 @@ $app->get('/reservas', function (Request $req, Response $res)
   $result = VC::getReserves();
   return $res->withJson($result);
 });
+$app->post('/apartado', function (Request $req, Response $res)
+{
+  $result = VC::nuevoApartado($req->getParsedBody(), $req->getUploadedFiles());
+  return $res->withJson($result);
+});

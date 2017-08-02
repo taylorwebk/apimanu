@@ -1,8 +1,10 @@
 <?php
 namespace Controllers;
+use Slim\Http\UploadedFile;
 use Models\Vehiculo as Vehiculo;
 use Models\Descuento as Descuento;
 use Models\Reserva as Reserva;
+use Models\Apartado as Apartado;
 use Models\R as R;
 class VehiculoController
 {
@@ -99,10 +101,36 @@ class VehiculoController
       return R::error('No se reconoce el/los campo(s): '.implode(', ', $fields));
     }
   }
-  public function getReserves()
+  public static function getReserves()
   {
     $vs = Vehiculo::with('reserva')->has('reserva')->get();
     return R::success($vs);
+  }
+  public static function nuevoApartado($data, $files)
+  {
+    if (self::validateData($data, ['reserva_id', 'cantidad'])) {
+      if (isset($files['comprobante'])) {
+        if (Reserva::find($data['reserva_id'])) {
+          $file = $files['comprobante'];
+          $folder = PROJECTPATH.'/assets/apartados/';
+          $filename = self::moveUploadedFile($folder, $file);
+          Apartado::create([
+            'id' => null,
+            'reserva_id' => $data['reserva_id'],
+            'cantidad' => $data['cantidad'],
+            'urlImgComprobate' => $filename,
+            'fecha' => date('Y-m-d')
+          ]);
+          return R::success('Se creo el apartado');
+        } else {
+          return R::error('no existe el vehículo con id: '.$data['reserva_id'].' o no esta reservado');
+        }
+      } else {
+        return R::error('No se reconoce el archivo: comprobante');
+      }
+    } else {
+      return R::error('No se reconocen los campos: '.implode(', ', ['reserva_id', 'cantidad']));
+    }
   }
   private static function validateData($data, $fields)
   {
@@ -112,5 +140,15 @@ class VehiculoController
       }
     }
     return true;
+  }
+  private static function moveUploadedFile($directory, UploadedFile $uploadedFile)
+  {
+      $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+      $basename = bin2hex(random_bytes(8)); // see http://php.net/manual/en/function.random-bytes.php
+      $filename = sprintf('%s.%0.8s', $basename, $extension);
+
+      $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
+
+      return $filename;
   }
 }

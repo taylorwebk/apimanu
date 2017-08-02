@@ -13,4 +13,8 @@ class Reserva extends Model
   {
     return $this->belongsTo('Models\Vehiculo');
   }
+  function apartados()
+  {
+    return $this->hasMany('Models\Apartado');
+  }
 }
