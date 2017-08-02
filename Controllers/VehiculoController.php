@@ -73,6 +73,15 @@ class VehiculoController
   public static function getApproved()
   {
     $res = Vehiculo::where('estado', '=', 1)->whereNotIn('id', Reserva::select('vehiculo_id')->get())->get();
+    foreach ($res as &$v) {
+      $des = $v->descuento()->select(['tipo', 'cantidad'])->first();
+      if ($des['tipo'] == 'porcentaje') {
+        $v->total = $v->precio*(100-$des['cantidad'])/100;
+      } else {
+        $v->total = $v->precio - $des['cantidad'];
+      }
+      $v->descuento = $v->descuento()->select(['tipo', 'cantidad'])->first();
+    }
     return R::success($res);
   }
   public static function reserve($data)
@@ -84,9 +93,6 @@ class VehiculoController
         ['estado', '=', 1]
         ])->whereNotIn('id', Reserva::select('vehiculo_id')->get())->first();
       if ($v) {
-        // if (Vehiculo::has('reserva')) {
-        //   return R::error('El vehiculo ya fue reservado');
-        // }
         Reserva::create([
           'id' => null,
           'vehiculo_id' => $v->id,
@@ -103,7 +109,7 @@ class VehiculoController
   }
   public static function getReserves()
   {
-    $vs = Vehiculo::with('reserva')->has('reserva')->get();
+    $vs = Vehiculo::with('reserva.apartados')->has('reserva')->get();
     return R::success($vs);
   }
   public static function nuevoApartado($data, $files)
@@ -118,7 +124,7 @@ class VehiculoController
             'id' => null,
             'reserva_id' => $data['reserva_id'],
             'cantidad' => $data['cantidad'],
-            'urlImgComprobate' => $filename,
+            'urlImgComprobate' => IP.'/apimanu/assets/apartados/'.$filename,
             'fecha' => date('Y-m-d')
           ]);
           return R::success('Se creo el apartado');
