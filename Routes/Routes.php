@@ -48,3 +48,8 @@ $app->post('/apartado', function (Request $req, Response $res)
   $result = VC::nuevoApartado($req->getParsedBody(), $req->getUploadedFiles());
   return $res->withJson($result);
 });
+$app->post('/facturacion', function (Request $req, Response $res)
+{
+  $result = VC::invoicing($req->getParsedBody());
+  return $res->withJson($result);
+});

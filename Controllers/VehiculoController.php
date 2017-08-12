@@ -5,6 +5,8 @@ use Models\Vehiculo as Vehiculo;
 use Models\Descuento as Descuento;
 use Models\Reserva as Reserva;
 use Models\Apartado as Apartado;
+use Models\Facturacion as Facturacion;
+use Models\Comision as Comision;
 use Models\R as R;
 class VehiculoController
 {
@@ -39,6 +41,15 @@ class VehiculoController
   public static function getAll()
   {
     $res = Vehiculo::where('estado', '=', 0)->get();
+    foreach ($res as &$v) {
+      $des = $v->descuento()->select(['tipo', 'cantidad'])->first();
+      if ($des['tipo'] == 'porcentaje') {
+        $v->total = $v->precio*(100-$des['cantidad'])/100;
+      } else {
+        $v->total = $v->precio - $des['cantidad'];
+      }
+      $v->descuento = $v->descuento()->select(['tipo', 'cantidad'])->first();
+    }
     return R::success($res);
   }
   public static function approve($data)
@@ -110,7 +121,20 @@ class VehiculoController
   public static function getReserves()
   {
     $vs = Vehiculo::with('reserva.apartados')->has('reserva')->get();
-    return R::success($vs);
+    $vs2 = $vs->filter(function ($v, $i) {
+      $reservas = (Facturacion::select('reserva_id')->get())->toArray();
+      // $rid = ($v->reserva()->select('id')->first())['id'];
+      $rid = $v->reserva->id;
+      // return false;
+      foreach ($reservas as $reserva) {
+        // var_dump($reserva);
+        if ($reserva['reserva_id'] == $rid) {
+          return false;
+        }
+      }
+      return true;
+    });
+    return R::success($vs2->values());
   }
   public static function nuevoApartado($data, $files)
   {
@@ -136,6 +160,28 @@ class VehiculoController
       }
     } else {
       return R::error('No se reconocen los campos: '.implode(', ', ['reserva_id', 'cantidad']));
+    }
+  }
+  public static function invoicing($data)
+  {
+    $fields = ['vin', 'tipo', 'monto', 'reserva_id'];
+    if (self::validateData($data, $fields)) {
+      if ($data['tipo'] != 'porcentaje' && $data['tipo'] != 'efectivo') {
+        return R::error('Campo tipo solo puede tener el valor de: porcentaje o efectivo');
+      }
+      $f = Facturacion::create([
+        'reserva_id' => $data['reserva_id'],
+        'vin' => $data['vin'],
+        'ffact' => date('Y-m-d')
+      ]);
+      $c = Comision::create([
+        'facturacion_id' => $f->id,
+        'cantidad' => $data['monto'],
+        'tipo' => $data['tipo']
+      ]);
+      return R::success('Se facturó el vehículo');
+    } else {
+      return R::error('No se reconocen los campos: '.implode(', ', $fields));
     }
   }
   private static function validateData($data, $fields)

@@ -31,6 +31,7 @@ create table reserva(
 	references vehiculo(id)
 	on delete cascade
 );
+-- DE APARTADOS VA A FACTURADOS O A DEVOLUCIONES
 create table apartados (
 	id integer not null auto_increment,
 	reserva_id integer not null,
@@ -43,21 +44,47 @@ create table apartados (
 	on delete cascade
 );
 -- fventa no esta bien definida, hay que definir notas y pendientes url
--- adicionar precio con descuento, pendiente = precio con descuento - apartados - notas
+-- adicionar precio con descuento, pendiente = precio con descuento - apartados
 -- devoluciones es solo un recordatorio
+-- PARA facturacion SOLO VIN
+-- CAMBIAR NOTAS, POR COMISION POR MONTO O PORCENTAJE
+-- AUN FALTA PAGAR EN FACTURACION
+-- N PAGOS (MONTO Y FECHA)
+-- ELIMINAR COMPRADOR
 create table facturacion(
 	id integer not null auto_increment,
 	reserva_id integer not null,
 	vin varchar(128),
 	ffact date,
-	comprador varchar(128),
-	notas double,
-	devolucion double,
 	primary key(id),
 	foreign key(reserva_id)
 	references reserva(id)
 	on delete cascade
 );
+create table comision(
+	id integer not null auto_increment,
+	facturacion_id integer not null,
+	tipo varchar(16),
+	cantidad double,
+	primary key(id),
+	foreign key(facturacion_id)
+	references facturacion(id)
+	on delete cascade
+);
+-- create table facturacion(
+-- 	id integer not null auto_increment,
+-- 	reserva_id integer not null,
+-- 	vin varchar(128),
+-- 	ffact date,
+-- 	comprador varchar(128),
+-- 	notas double,
+-- 	devolucion double,
+-- 	primary key(id),
+-- 	foreign key(reserva_id)
+-- 	references reserva(id)
+-- 	on delete cascade
+-- );
+-- DE UNA A 4 FACTURAS
 create table factura(
 	id integer not null auto_increment,
 	facturacion_id integer not null,

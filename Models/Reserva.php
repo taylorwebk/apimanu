@@ -17,4 +17,8 @@ class Reserva extends Model
   {
     return $this->hasMany('Models\Apartado');
   }
+  function facturacion()
+  {
+    return $this->hasOne('Models\Facturacion');
+  }
 }
