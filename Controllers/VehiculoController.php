@@ -164,20 +164,12 @@ class VehiculoController
   }
   public static function invoicing($data)
   {
-    $fields = ['vin', 'tipo', 'monto', 'reserva_id'];
+    $fields = ['vin', 'reserva_id'];
     if (self::validateData($data, $fields)) {
-      if ($data['tipo'] != 'porcentaje' && $data['tipo'] != 'efectivo') {
-        return R::error('Campo tipo solo puede tener el valor de: porcentaje o efectivo');
-      }
       $f = Facturacion::create([
         'reserva_id' => $data['reserva_id'],
         'vin' => $data['vin'],
         'ffact' => date('Y-m-d')
-      ]);
-      $c = Comision::create([
-        'facturacion_id' => $f->id,
-        'cantidad' => $data['monto'],
-        'tipo' => $data['tipo']
       ]);
       return R::success('Se facturó el vehículo');
     } else {
