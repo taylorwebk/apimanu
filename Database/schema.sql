@@ -43,14 +43,11 @@ create table apartados (
 	references reserva(id)
 	on delete cascade
 );
--- fventa no esta bien definida, hay que definir notas y pendientes url
+-- LA LISTA DE FACTURADOS DEBE TENER: VIN, MODELO, VENDEDOR, PRECION RESTANTE, FECHA.
+-- AGREGAR COMISION QUE SE LLENA DESPUES DE FACTURAR, EN LA LISTA DE FACTURADOS
 -- adicionar precio con descuento, pendiente = precio con descuento - apartados
 -- devoluciones es solo un recordatorio
 -- PARA facturacion SOLO VIN
--- CAMBIAR NOTAS, POR COMISION POR MONTO O PORCENTAJE
--- AUN FALTA PAGAR EN FACTURACION
--- N PAGOS (MONTO Y FECHA)
--- ELIMINAR COMPRADOR
 create table facturacion(
 	id integer not null auto_increment,
 	reserva_id integer not null,
@@ -61,6 +58,8 @@ create table facturacion(
 	references reserva(id)
 	on delete cascade
 );
+-- CADA PAGO DE FACTURACION REQUIERE MONTO Y FECHA
+-- CREAR LA TABLA DE LOS PAGOS
 create table comision(
 	id integer not null auto_increment,
 	facturacion_id integer not null,
@@ -71,19 +70,15 @@ create table comision(
 	references facturacion(id)
 	on delete cascade
 );
--- create table facturacion(
--- 	id integer not null auto_increment,
--- 	reserva_id integer not null,
--- 	vin varchar(128),
--- 	ffact date,
--- 	comprador varchar(128),
--- 	notas double,
--- 	devolucion double,
--- 	primary key(id),
--- 	foreign key(reserva_id)
--- 	references reserva(id)
--- 	on delete cascade
--- );
+create table pago(
+	id integer not null auto_increment,
+	facturacion_id integer not null,
+	monto double,
+	primary key(id),
+	foreign key(facturacion_id)
+	references facturacion(id)
+	on delete cascade
+);
 -- DE UNA A 4 FACTURAS
 create table factura(
 	id integer not null auto_increment,

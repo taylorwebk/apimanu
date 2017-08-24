@@ -17,4 +17,8 @@ class Facturacion extends Model
   {
     return $this->hasOne('Models\Comision');
   }
+  function pagos()
+  {
+    return $this->hasMany('Models\Pago');
+  }
 }

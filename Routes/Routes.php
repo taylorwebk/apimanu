@@ -53,3 +53,8 @@ $app->post('/facturacion', function (Request $req, Response $res)
   $result = VC::invoicing($req->getParsedBody());
   return $res->withJson($result);
 });
+$app->get('/facturados', function (Request $req, Response $res)
+{
+  $result = VC::invoices();
+  return $res->withJson($result);
+});

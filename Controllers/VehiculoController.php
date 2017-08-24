@@ -176,6 +176,39 @@ class VehiculoController
       return R::error('No se reconocen los campos: '.implode(', ', $fields));
     }
   }
+  public static function invoices()
+  {
+    $res = Facturacion::with(['reserva.vehiculo.descuento','reserva.apartados','pagos'])->get();
+    $res->transform(function ($r, $key)
+    {
+      $item = [];
+      $item['id'] = $r->id;
+      $item['vin'] = $r->vin;
+      $item['ffact'] = $r->ffact;
+      $item['modelo'] = $r->reserva->vehiculo->modelo;
+      $item['vendedor'] = $r->reserva->vendedor;
+      if ($r->reserva->vehiculo->descuento->tipo == 'porcentaje') {
+        $precio = $r->reserva->vehiculo->precio*(100-$r->reserva->vehiculo->descuento->cantidad)/100;
+      } else {
+        $precio = $r->reserva->vehiculo->precio - $r->reserva->vehiculo->descuento->cantidad;
+      }
+      $totalApartados = 0;
+      $totalPagos = 0;
+      $totalApartados = $r->reserva->apartados->reduce(function ($val, $a) {
+        return $val + $a->cantidad;
+      }, 0);
+      $totalPagos = $r->pagos->reduce(function ($val, $p)
+      {
+        return $val + $p->monto;
+      }, 0);
+      $item['precio'] = $precio;
+      $item['totalApartados'] = $totalApartados;
+      $item['totalPagos'] = $totalPagos;
+      $item['precioRestante'] = $precio - $totalPagos - $totalApartados;
+      return $item;
+    });
+    return $res;
+  }
   private static function validateData($data, $fields)
   {
     foreach ($fields as $value) {
