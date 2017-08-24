@@ -7,6 +7,7 @@ use Models\Reserva as Reserva;
 use Models\Apartado as Apartado;
 use Models\Facturacion as Facturacion;
 use Models\Comision as Comision;
+use Models\Pago as Pago;
 use Models\R as R;
 class VehiculoController
 {
@@ -227,6 +228,24 @@ class VehiculoController
           'cantidad' => $data['cantidad']
           ]);
         return R::success('Se agrego la nota(Comision)');
+      } else {
+        return R::error('No existe la facturacion con id: '.$data['facturacion_id'].'. Verifique que el id existe en la lista de facturados');
+      }
+    } else {
+      return R::error('No se reconocen los campos: '.implode(', ', $fields));
+    }
+  }
+  public static function addPay($data)
+  {
+    $fields = ['facturacion_id', 'monto'];
+    if (self::validateData($data, $fields)) {
+      if (Facturacion::find($data['facturacion_id'])) {
+        Pago::create([
+          'id' => null,
+          'facturacion_id' => $data['facturacion_id'],
+          'monto' => $data['monto']
+        ]);
+        return R::success('Se adiciono el pago');
       } else {
         return R::error('No existe la facturacion con id: '.$data['facturacion_id'].'. Verifique que el id existe en la lista de facturados');
       }

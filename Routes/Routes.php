@@ -63,3 +63,8 @@ $app->post('/notas', function (Request $req, Response $res)
   $result = VC::addNote($req->getParsedBody());
   return $res->withJson($result);
 });
+$app->post('/pago', function (Request $req, Response $res)
+{
+  $result = VC::addPay($req->getParsedBody());
+  return $res->withJson($result);
+});
