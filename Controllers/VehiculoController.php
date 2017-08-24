@@ -209,6 +209,31 @@ class VehiculoController
     });
     return $res;
   }
+  public static function addNote($data)
+  {
+    $fields = ['facturacion_id', 'tipo', 'cantidad'];
+    if (self::validateData($data, $fields)) {
+      if ($data['tipo'] != 'porcentaje' && $data['tipo'] != 'efectivo') {
+        return R::error('Campo tipo solo puede tener el valor de: porcentaje o efectivo');
+      }
+      if (Facturacion::find($data['facturacion_id'])) {
+        if (Comision::where('facturacion_id', '=', $data['facturacion_id'])->first()) {
+          return R::error('La facturacion con id: '.$data['facturacion_id'].' ya tiene su nota(comision).');
+        }
+        Comision::create([
+          'id' => null,
+          'facturacion_id' => $data['facturacion_id'],
+          'tipo' => $data['tipo'],
+          'cantidad' => $data['cantidad']
+          ]);
+        return R::success('Se agrego la nota(Comision)');
+      } else {
+        return R::error('No existe la facturacion con id: '.$data['facturacion_id'].'. Verifique que el id existe en la lista de facturados');
+      }
+    } else {
+      return R::error('No se reconocen los campos: '.implode(', ', $fields));
+    }
+  }
   private static function validateData($data, $fields)
   {
     foreach ($fields as $value) {

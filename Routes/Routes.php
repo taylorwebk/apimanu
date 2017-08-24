@@ -58,3 +58,8 @@ $app->get('/facturados', function (Request $req, Response $res)
   $result = VC::invoices();
   return $res->withJson($result);
 });
+$app->post('/notas', function (Request $req, Response $res)
+{
+  $result = VC::addNote($req->getParsedBody());
+  return $res->withJson($result);
+});
