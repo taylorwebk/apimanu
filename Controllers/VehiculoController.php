@@ -208,7 +208,7 @@ class VehiculoController
       $item['precioRestante'] = $precio - $totalPagos - $totalApartados;
       return $item;
     });
-    return $res;
+    return R::success($res);
   }
   public static function addNote($data)
   {
