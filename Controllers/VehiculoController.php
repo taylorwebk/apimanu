@@ -187,6 +187,8 @@ class VehiculoController
       $item['vin'] = $r->vin;
       $item['ffact'] = $r->ffact;
       $item['modelo'] = $r->reserva->vehiculo->modelo;
+      $item['agencia'] = $r->reserva->vehiculo->agencia;
+      $item['comprador'] = $r->reserva->comprador;
       $item['vendedor'] = $r->reserva->vendedor;
       if ($r->reserva->vehiculo->descuento->tipo == 'porcentaje') {
         $precio = $r->reserva->vehiculo->precio*(100-$r->reserva->vehiculo->descuento->cantidad)/100;
@@ -206,6 +208,7 @@ class VehiculoController
       $item['totalApartados'] = $totalApartados;
       $item['totalPagos'] = $totalPagos;
       $item['precioRestante'] = $precio - $totalPagos - $totalApartados;
+      // $item['pagos'] = $r->pagos;
       return $item;
     });
     return R::success($res);
