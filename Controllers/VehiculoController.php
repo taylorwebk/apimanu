@@ -8,6 +8,7 @@ use Models\Apartado as Apartado;
 use Models\Facturacion as Facturacion;
 use Models\Comision as Comision;
 use Models\Pago as Pago;
+use Models\Factura as Factura;
 use Models\R as R;
 class VehiculoController
 {
@@ -163,6 +164,33 @@ class VehiculoController
       return R::error('No se reconocen los campos: '.implode(', ', ['reserva_id', 'cantidad']));
     }
   }
+  public static function newBill($data, $files)
+  {
+    $fields = ['facturacion_id'];
+    if (self::validateData($data, $fields)) {
+      if (isset($files['pdf']) && isset($files['xml'])) {
+        if (Facturacion::find($data['facturacion_id'])) {
+          $pdf = $files['pdf'];
+          $xml = $files['xml'];
+          $filenamePdf = self::moveUploadedFile(PROJECTPATH.'/assets/pdf/', $pdf);
+          $filenameXml = self::moveUploadedFile(PROJECTPATH.'/assets/xml/', $xml);
+          Factura::create([
+            'id' => null,
+            'facturacion_id' => $data['facturacion_id'],
+            'urlPdf' => IP.'/apimanu/assets/pdf/'.$filenamePdf,
+            'urlXml' => IP.'/apimanu/assets/pdf/'.$filenameXml
+          ]);
+          return R::success('Se creo la factura...!!!');
+        } else {
+          return R::error('no se reconoce el id:'.$data['facturacion_id'].' en la tabla de facturados');
+        }
+      } else {
+        return R::error('no se encuentran los archivos: pdf, xml');
+      }
+    } else {
+      return R::error('No se reconocen los campos: facturacion_id');
+    }
+  }
   public static function invoicing($data)
   {
     $fields = ['vin', 'reserva_id'];
@@ -177,13 +205,16 @@ class VehiculoController
       return R::error('No se reconocen los campos: '.implode(', ', $fields));
     }
   }
+  // retornar facturas
+  // ORDENAR POR id_vehiculo
   public static function invoices()
   {
-    $res = Facturacion::with(['reserva.vehiculo.descuento','reserva.apartados','pagos'])->get();
+    $res = Facturacion::with(['reserva.vehiculo.descuento','reserva.apartados','pagos', 'comision', 'facturas'])->get();
     $res->transform(function ($r, $key)
     {
       $item = [];
       $item['id'] = $r->id;
+      $item['id_vehiculo'] = $r->reserva->vehiculo->id;
       $item['vin'] = $r->vin;
       $item['ffact'] = $r->ffact;
       $item['modelo'] = $r->reserva->vehiculo->modelo;
@@ -208,7 +239,9 @@ class VehiculoController
       $item['totalApartados'] = $totalApartados;
       $item['totalPagos'] = $totalPagos;
       $item['precioRestante'] = $precio - $totalPagos - $totalApartados;
-      // $item['pagos'] = $r->pagos;
+      $item['pagos'] = $r->pagos;
+      $item['comision'] = $r->comision;
+      $item['facturas'] = $r->facturas;
       return $item;
     });
     return R::success($res);
@@ -246,7 +279,8 @@ class VehiculoController
         Pago::create([
           'id' => null,
           'facturacion_id' => $data['facturacion_id'],
-          'monto' => $data['monto']
+          'monto' => $data['monto'],
+          'fecha' => date('Y-m-d')
         ]);
         return R::success('Se adiciono el pago');
       } else {
@@ -256,6 +290,7 @@ class VehiculoController
       return R::error('No se reconocen los campos: '.implode(', ', $fields));
     }
   }
+
   private static function validateData($data, $fields)
   {
     foreach ($fields as $value) {

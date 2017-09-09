@@ -21,4 +21,8 @@ class Facturacion extends Model
   {
     return $this->hasMany('Models\Pago');
   }
+  function facturas()
+  {
+    return $this->hasMany('Models\Factura');
+  }
 }

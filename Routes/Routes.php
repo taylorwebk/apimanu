@@ -68,3 +68,15 @@ $app->post('/pago', function (Request $req, Response $res)
   $result = VC::addPay($req->getParsedBody());
   return $res->withJson($result);
 });
+$app->post('/factura', function (Request $req, Response $res)
+{
+  $result = VC::newBill($req->getParsedBody(), $req->getUploadedFiles());
+  return $res->withJson($result);
+});
+/*
+LISTA FACTURADOS CORREGIDA
+AGREGAR FACTURAS
+MODIFICAR PRECIO CALCULAR EL PRECIO RECIBIDO MANTENIEDO LOS DESCUENTOS
+LISTA DE ENTREGAS DE LA TABLA ENTREGAS CON CAMPOS VACIOS
+POST DE LISTA DE ENTREGAS
+*/

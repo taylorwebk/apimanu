@@ -70,10 +70,12 @@ create table comision(
 	references facturacion(id)
 	on delete cascade
 );
+-- AGREGAR FECHA
 create table pago(
 	id integer not null auto_increment,
 	facturacion_id integer not null,
 	monto double,
+	fecha date,
 	primary key(id),
 	foreign key(facturacion_id)
 	references facturacion(id)
@@ -91,6 +93,10 @@ create table factura(
 	on delete cascade
 );
 -- puede que factura dependa de venta
+-- fentrega FECHA DE ENTREGA FISICA
+-- AGREGAR FECHA TRASPASO DONDE EL VEHICULO SE
+-- PASAR DE LA LISTA DE FACTURACION A LA LISTA DE FACTURAR.
+-- EDITAR ENTREGA, LUEGO ENTREGA FINAL.
 create table entrega(
 	id integer not null auto_increment,
 	facturacion_id integer not null,
