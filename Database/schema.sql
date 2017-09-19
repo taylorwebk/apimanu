@@ -31,7 +31,6 @@ create table reserva(
 	references vehiculo(id)
 	on delete cascade
 );
--- DE APARTADOS VA A FACTURADOS O A DEVOLUCIONES
 create table apartados (
 	id integer not null auto_increment,
 	reserva_id integer not null,
@@ -43,11 +42,6 @@ create table apartados (
 	references reserva(id)
 	on delete cascade
 );
--- LA LISTA DE FACTURADOS DEBE TENER: VIN, MODELO, VENDEDOR, PRECION RESTANTE, FECHA.
--- AGREGAR COMISION QUE SE LLENA DESPUES DE FACTURAR, EN LA LISTA DE FACTURADOS
--- adicionar precio con descuento, pendiente = precio con descuento - apartados
--- devoluciones es solo un recordatorio
--- PARA facturacion SOLO VIN
 create table facturacion(
 	id integer not null auto_increment,
 	reserva_id integer not null,
@@ -58,8 +52,6 @@ create table facturacion(
 	references reserva(id)
 	on delete cascade
 );
--- CADA PAGO DE FACTURACION REQUIERE MONTO Y FECHA
--- CREAR LA TABLA DE LOS PAGOS
 create table comision(
 	id integer not null auto_increment,
 	facturacion_id integer not null,
@@ -70,7 +62,6 @@ create table comision(
 	references facturacion(id)
 	on delete cascade
 );
--- AGREGAR FECHA
 create table pago(
 	id integer not null auto_increment,
 	facturacion_id integer not null,
@@ -81,7 +72,6 @@ create table pago(
 	references facturacion(id)
 	on delete cascade
 );
--- DE UNA A 4 FACTURAS
 create table factura(
 	id integer not null auto_increment,
 	facturacion_id integer not null,
@@ -100,7 +90,8 @@ create table factura(
 create table entrega(
 	id integer not null auto_increment,
 	facturacion_id integer not null,
-	fentrega date,
+	entrega date,
+	entregaFinal date,
 	factura boolean,
 	cargador boolean,
 	notas text,
